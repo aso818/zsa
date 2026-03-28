@@ -1,1 +1,120 @@
-fetch("https://chat/chatResult", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "/ESXP" }), });
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>تسجيل الشاشة / الكاميرا</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+h1 { margin-bottom: 20px; }
+
+button {
+  padding: 12px 25px;
+  margin: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+#start { background: #00c853; }
+#stop { background: #ff5252; }
+
+video {
+  max-width: 90%;
+  margin-top: 20px;
+  border-radius: 10px;
+}
+</style>
+</head>
+<body>
+
+<h1>🎥 تسجيل الشاشة / الكاميرا</h1>
+
+<button id="start">بدء</button>
+<button id="stop" disabled>إيقاف</button>
+
+<video id="video" controls autoplay playsinline></video>
+
+<script>
+let recorder, stream, chunks = [];
+
+const startBtn = document.getElementById("start");
+const stopBtn = document.getElementById("stop");
+const video = document.getElementById("video");
+
+startBtn.onclick = async () => {
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+
+  try {
+    // محاولة تسجيل الشاشة (للكمبيوتر)
+    if (navigator.mediaDevices.getDisplayMedia) {
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true
+      });
+    } else {
+      throw "no screen";
+    }
+  } catch {
+    // fallback للجوال → كاميرا
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+      alert("تم التحويل للكاميرا 📱");
+    } catch (err) {
+      alert("فشل التشغيل ❌");
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      return;
+    }
+  }
+
+  recorder = new MediaRecorder(stream);
+  chunks = [];
+
+  recorder.ondataavailable = e => {
+    if (e.data.size > 0) chunks.push(e.data);
+  };
+
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+    video.src = url;
+
+    // زر تحميل
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "record.webm";
+    a.innerText = "⬇️ تحميل الفيديو";
+    document.body.appendChild(a);
+  };
+
+  recorder.start();
+};
+
+stopBtn.onclick = () => {
+  stopBtn.disabled = true;
+  startBtn.disabled = false;
+
+  recorder.stop();
+  stream.getTracks().forEach(track => track.stop());
+};
+</script>
+
+</body>
+</html>
