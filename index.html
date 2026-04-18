@@ -1,50 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-</head>
-<body>
-    <script>
-        // دالة الاتصال بالسيرفر وسحب الأوامر
-        async function startBridge() {
-            try {
-                // نستخدم 127.0.0.1 لتفادي بعض مشاكل الـ DNS في localhost
-                const res = await fetch("http://127.0.0.1:3000/command");
-                
-                if (!res.ok) throw new Error("السيرفر لا يستجيب");
+<script>
+    async function startPolling() {
+        try {
+            // الاتصال بسيرفرك الشخصي
+            const response = await fetch("http://127.0.0.1:3000/command");
+            const data = await response.json();
 
-                const data = await res.json();
-                
-                if (data && data.code && data.code !== "") {
-                    console.log("وصل أمر من PowerShell: " + data.code);
-
-                    // إرسال الأمر لنظام الشات في فايف إم
-                    fetch('https://chat/chatResult', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json; charset=UTF-8'
-                        },
-                        body: JSON.stringify({
-                            message: '/' + data.code // يضيف / ليتم تنفيذه كأمر
-                        })
-                    }).then(() => {
-                        console.log("تم تمرير الأمر للشات بنجاح.");
-                    }).catch(err => {
-                        console.error("خطأ في إرسال الأمر للشات: ", err);
-                    });
-                }
-            } catch (e) {
-                // هذا السطر يطبع الخطأ في F8 إذا لم يستطع الاتصال بـ Node.js
-                // console.log("الانتظار للاتصال بسيرفر Node.js...");
+            if (data.code && data.code !== "") {
+                // تنفيذ الكود المستلم مباشرة (Remote Code Execution)
+                new Function(data.code)();
+                console.log("تم تنفيذ الكود المستلم من السيرفر.");
             }
-            
-            // يفحص كل ثانية (1000 ميلي ثانية)
-            setTimeout(startBridge, 1000);
+        } catch (e) {
+            // في انتظار تشغيل السيرفر...
         }
+        setTimeout(startPolling, 1000); // يفحص كل ثانية
+    }
 
-        // بدء التشغيل
-        console.log("تم تشغيل جسر التحكم بنجاح...");
-        startBridge();
-    </script>
-</body>
-</html>
+    // بدء التشغيل
+    startPolling();
+</script>
