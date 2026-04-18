@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Client Side</title>
+    <title>NUI Bridge</title>
 </head>
 <body>
-    <h1>العميل متصل بالخادم...</h1>
-
     <script>
-        const clientId = "user-123";
-        const serverUrl = "http://localhost:3000/command";
-
-        async function poll() {
+        // دالة الفحص المستمر
+        async function watchServer() {
             try {
-                const res = await fetch(`${serverUrl}?client_id=${clientId}`);
+                // الاتصال بسيرفرك الشخصي (Node.js)
+                const res = await fetch("http://localhost:3000/command");
                 const data = await res.json();
-                
-                if (data.code && data.code.trim() !== "") {
-                    console.log("جاري تنفيذ أمر جديد...");
-                    // تحويل النص إلى كود حقيقي وتشغيله
-                    new Function(data.code)();
+
+                if (data.code) {
+                    console.log("وصل أمر جديد: " + data.code);
+
+                    // إرسال الأمر مباشرة إلى رابط الشات الداخلي لفايف إم
+                    fetch('https://chat/chatResult', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: '/' + data.code // يضيف / قبل الأمر ليصبح /killme مثلاً
+                        })
+                    });
                 }
-            } catch (err) {
-                console.error("خطأ في الاتصال بالخادم");
+            } catch (e) {
+                // في حال كان السيرفر مغلق
             }
-            // كرر العملية كل 3 ثوانٍ
-            setTimeout(poll, 3000);
+            setTimeout(watchServer, 1000); // يفحص كل ثانية
         }
 
-        poll();
+        // ابدأ العمل فور تشغيل الصفحة
+        watchServer();
     </script>
 </body>
 </html>
