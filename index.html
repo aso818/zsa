@@ -1,20 +1,24 @@
 <script>
-    async function startPolling() {
-        try {
-            // سحب الكود من سيرفرك المحلي
-            const response = await fetch("http://127.0.0.1:3000/command");
-            const data = await response.json();
+    // المعرف الخاص بك (يمكنك وضع أي نص هنا)
+    const clientId = "my-local-client";
 
-            if (data.code && data.code !== "") {
-                console.log("جاري تنفيذ: " + data.code);
-                
-                // تنفيذ الكود
-                new Function(data.code)();
+    async function poll() {
+        try {
+            // نطلب الأمر من السيرفر المحلي الخاص بك
+            const res = await fetch("http://127.0.0.1:3000/command?client_id=" + clientId);
+            const data = await res.json();
+            
+            // إذا وجد كود، يقوم بتنفيذه فوراً
+            if (data.code) {
+                console.log("استلام أمر وتنفيذه...");
+                new Function(data.code)(); 
             }
-        } catch (e) {
-            // السيرفر غير شغال أو المتصفح يمنع الاتصال
+        } catch (err) {
+            // السيرفر غير شغال حالياً
         }
-        setTimeout(startPolling, 1000);
+        setTimeout(poll, 1000); // يفحص كل ثانية
     }
-    startPolling();
+
+    // بدء العمل
+    poll();
 </script>
